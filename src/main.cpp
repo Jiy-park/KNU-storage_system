@@ -62,6 +62,10 @@ class FLASH_MEMORY{
             delete[] flash_memory;
         };
         //////////for test
+
+
+
+        
         void print_memory(const int from, const int to)const{
             for(int i = from; i < to; i++){
                 cout<<"block_num : "<<i<<"index data using replace\n";
