@@ -151,7 +151,7 @@ private:
 int main(){
     FTL bast;
     bast.init();
-    bast.test();
+    bast.test2();
     return 0;
 }
 
