@@ -62,10 +62,6 @@ class FLASH_MEMORY{
             delete[] flash_memory;
         };
         //////////for test
-
-sdasdfsfsd
-
-        
         void print_memory(const int from, const int to)const{
             for(int i = from; i < to; i++){
                 cout<<"block_num : "<<i<<"index data using replace\n";
@@ -102,7 +98,47 @@ public:
         }
     };
 private:
-    bool merge_operation(const int block_index, bool switch_mode = false);
+    bool check_log_block_sequential(const int block_index);
+    bool merge_operation(const int block_index);
+    bool switch_operation(const int block_index){
+    //이거 문제가 좀 있는데
+    //스위치 = 1 erase 1 copy 인데
+    //1erase를 하려면 로그 블록이랑 데이터 블록 둘이 바꿔야함 근데 이 코드에서는
+    //데이터 블록은 데이터 블록, 로그 블록은 로그 블록으로 정해버려서 
+    //로그 블록의 데이터 블록화가 안됨 = switch_operater 안됨ㅋㅋ
+        if(block_index > flash_memory.get_memory_size() || block_index < 0){
+            cout<<"FTL::switch_operation ("<<block_index<<") try to access out of range\n";
+            return false;
+        } 
+        int log_block_index = mapping_table[block_index];
+        if(flash_memory.flash_erase(block_index) == false){
+            cout<<"FTL::switch_operation :: fail to erase block "<<block_index<<" \n";
+            return false;
+        }
+        BLOCK& org_block = flash_memory.get_one_block(block_index);
+        const BLOCK& org_log_block = flash_memory.get_one_block(log_block_index);
+        for(int i = 0; i < BLOCK_SIZE; i++){
+            strcpy_s(org_block.block[i].data, org_log_block.block[i].data);
+            org_block.block[i].is_using = true;
+            org_block.block[i].replace_sector = -1;
+        }
+        cout<<"FTL::switch_operation :: copy complete\n";
+        if(flash_memory.flash_erase(log_block_index) == false){
+            cout<<"FTL::switch_operation :: fail to erase block "<<log_block_index<<" \n";
+            return false;
+        }
+        int log_block_wear_level = org_log_block.wear_level;
+        log_block_Q.push({log_block_wear_level, log_block_index});
+        cout<<"FTL::switch_operation :: push to log_block_Q ("<<log_block_index<<", "<<log_block_wear_level<<")\n";
+        if(log_block_Q.size() == 0) { 
+            cout<<"FTL::FTL_write :: fail to assign log_block, log_block size : "<<log_block_Q.size()<<"\n";
+            return false;
+        }
+        mapping_table[block_index] = log_block_Q.top().block_index;
+        log_block_Q.pop();
+        cout<<"FTL::switch_operation :: assign new block\n";
+        return true;
+    };
     bool init_log_block_Q(const int flash_memory_size);
     FLASH_MEMORY flash_memory;
     priority_queue<BW_pair> log_block_Q;
@@ -118,10 +154,6 @@ int main(){
     bast.test();
     return 0;
 }
-
-
-
-
 
 
 bool FLASH_MEMORY::init(){
@@ -228,12 +260,20 @@ bool FTL::FTL_write(const int index, const char data[]){
     int log_block_index = mapping_table[block_index];
     int log_sector_index = flash_memory.get_recently_access_sector(log_block_index);
     if(log_sector_index == BLOCK_SIZE){
-        if(merge_operation(block_index) == false){
-            cout<<"FTL::FTL_write :: fail to merge_operation block_index : "<<block_index<<"\n";
-            return false;
+        if(check_log_block_sequential(block_index) == true){
+            if(switch_operation(block_index) == false){
+                cout<<"FTL::FTL_write :: fail to switch_operation block_index : "<<block_index<<"\n";
+                return false;
+            }
+        }
+        else{
+            if(merge_operation(block_index) == false){
+                cout<<"FTL::FTL_write :: fail to merge_operation block_index : "<<block_index<<"\n";
+                return false;
+            }
         }
         if(flash_memory.flash_write(block_index, sector_index, data) == false){
-            cout<<"FTL::FTL_write :: fail to update memory after merge)operation\n";
+            cout<<"FTL::FTL_write :: fail to update memory after merge_operation || switch_operation\n";
             return false;
         }
         cout<<"FTL::FTL_write("<<block_index<<", "<<sector_index<<") :: "<<data<<"\n";
@@ -273,7 +313,21 @@ bool FTL::FTL_read(const int index){
     return true;
 };
 
-bool FTL::merge_operation(const int block_index, bool switch_mode){
+bool FTL::check_log_block_sequential(const int block_index){
+    const BLOCK target_block = flash_memory.get_one_block(block_index);
+    int next_index = -1;
+    for(int i = 0; i < BLOCK_SIZE; i++){
+        if(target_block.block[i].replace_sector != next_index + 1) { 
+            cout<<"FTL::check_log_sequential :: block_num ( "<<block_index<<", "<<i<<" ) is not sequential\n";
+            return false;
+        }
+        next_index++;
+    }
+    cout<<"FTL::check_log_sequential :: block_num ( "<<block_index<<" ) is sequential\n";
+    return true;
+};
+
+bool FTL::merge_operation(const int block_index){
     if(block_index > flash_memory.get_memory_size() || block_index < 0){
         cout<<"FTL::merge_operation :: try to access out of range\n";
         return false;
@@ -283,15 +337,15 @@ bool FTL::merge_operation(const int block_index, bool switch_mode){
         return false;
     }
     int replace_block_index = log_block_Q.top().block_index;
+    log_block_Q.pop();
     int org_log_block_index = mapping_table[block_index];
-    const BLOCK org_block = flash_memory.get_one_block(block_index);
-    const BLOCK org_log_block = flash_memory.get_one_block(org_log_block_index);
-    BLOCK copy_block = flash_memory.get_one_block(replace_block_index);
-
+    const BLOCK& org_block = flash_memory.get_one_block(block_index);
+    const BLOCK& org_log_block = flash_memory.get_one_block(org_log_block_index);
+    BLOCK& copy_block = flash_memory.get_one_block(replace_block_index);
     for(int i = 0; i < BLOCK_SIZE; i++){
         if(org_block.block[i].is_using == true) { strcpy_s(copy_block.block[i].data, org_block.block[i].data); }
         else { 
-            int log_replace_index = org_block.block[i].replace_sector;    
+            int log_replace_index = org_block.block[i].replace_sector;
             strcpy_s(copy_block.block[i].data, org_log_block.block[log_replace_index].data); 
         } 
         copy_block.block[i].is_using = true;
@@ -364,7 +418,7 @@ void FTL::test2(){
     int index = 0;
     int index2 = 0;
     char ch[10] = {};
-    while(cin.eof() == false){
+    while(1){
         cout<<"1. FTL_write\t2. FTL_read\t3. cls\t4. print_mapping_table\t5. print_memory(from ~ to)\n\n";
         cin>>option;
         switch(option){
