@@ -100,7 +100,7 @@ public:
                 return false;
             }
         }
-        cout<<"FTL::FTL_write :: lbn( "<<lbn<<" )assign pbn"<<block_mapping_table[lbn]<<"\n";
+        cout<<"FTL::FTL_write :: lbn( "<<lbn<<" ) -> pbn( "<<block_mapping_table[lbn]<<" )\n";
         int pbn = block_mapping_table[lbn];
         if(flash_memory.flash_write(pbn, lsn, data) == true) {
             cout<<"FTL::FTL_write( "<<pbn<<", "<<lsn<<" ) :: "<<data<<"\n";
@@ -119,7 +119,7 @@ public:
                 return false;
             }
         }
-
+        cout<<"FTL::FTL_write :: lbn( "<<lbn<<" ) -> pbn( "<<block_mapping_table[lbn]<<" ) -> log_block( "<<sector_mapping_table[pbn].log_block<<" )\n";
         int access_sector_index = flash_memory.get_recently_access_sector(sector_mapping_table[pbn].log_block);
         if(flash_memory.flash_write(sector_mapping_table[pbn].log_block, access_sector_index, data) == true) {
             flash_memory.set_is_using(pbn, lsn, false);
@@ -158,11 +158,11 @@ private:
     bool check_log_block_sequential(const int pbn){
         for(int i = 0; i < BLOCK_SIZE; i++){
             if(sector_mapping_table[pbn].sector_mapping[i] != i) { 
-                cout<<"FTL::check_log_sequential :: block_num ( "<<pbn<<", "<<i<<" ) is not sequential\n";
+                cout<<"FTL::check_log_sequential :: pbn( "<<pbn<<" ) -> log_block( "<<sector_mapping_table[pbn].log_block<<" ) is not sequential\n";
                 return false;
             }
         }
-        cout<<"FTL::check_log_sequential :: block_num ( "<<pbn<<" ) is sequential\n";
+        cout<<"FTL::check_log_sequential :: pbn( "<<pbn<<" ) -> log_block( "<<sector_mapping_table[pbn].log_block<<" ) is sequential\n";
         return true;
     };
     bool merge_operation(const int lbn, const int pbn, const int log_pbn){
@@ -195,11 +195,11 @@ private:
         }
         cout<<"FTL::merge_operation :: copy complete (copy_block : "<<copy_block_index<<" )\n";
         if(flash_memory.flash_erase(pbn) == false){
-            cout<<"FTL::merge_operation :: fail to erase block "<<pbn<<" \n";
+            cout<<"FTL::merge_operation :: fail to erase block ( "<<pbn<<" )\n";
             return false;
         }
         if(flash_memory.flash_erase(log_pbn) == false){
-            cout<<"FTL::merge_operation :: fail to erase block "<<log_pbn<<" \n";
+            cout<<"FTL::merge_operation :: fail to erase block ( "<<log_pbn<<" )\n";
             return false;
         }
          //////////////////////////////////////push 할 때 로그블록 큐의 잔여량과 데이터 블록 큐의 잔여량을 비교하여 적은 쪽으로 푸쉬할 예정 ////
@@ -213,9 +213,9 @@ private:
         //
         //
         data_block_Q.push({data_block.wear_level, pbn});
-        cout<<"FTL::merge_operation :: push to data_block_Q ("<<pbn<<", "<<data_block.wear_level<<")\n";
+        cout<<"FTL::merge_operation :: push to data_block_Q ( "<<pbn<<", "<<data_block.wear_level<<" )\n";
         log_block_Q.push({log_block.wear_level, log_pbn});
-        cout<<"FTL::merge_operation :: push to log_block_Q ("<<log_pbn<<", "<<log_block.wear_level<<")\n";
+        cout<<"FTL::merge_operation :: push to log_block_Q ( "<<log_pbn<<", "<<log_block.wear_level<<" )\n";
 
 
         for(int i = 0; i < BLOCK_SIZE; i++) { sector_mapping_table[pbn].sector_mapping[i] = -1; }
@@ -264,8 +264,6 @@ private:
     priority_queue<BW_pair> data_block_Q;
     int* block_mapping_table = nullptr;
     SMP* sector_mapping_table = nullptr;
-    int block_mapping_table_size = 0;
-    int sector_mapping_table_size = 0;
     int data_block_ratio = 0;
 };
 
@@ -295,37 +293,41 @@ bool FLASH_MEMORY::init(){
 
 bool FLASH_MEMORY::flash_write(const int block_index, const int sector_index, const char data[]){
     if(block_index > flash_memory_size || block_index < 0 || sector_index > BLOCK_SIZE || sector_index < 0){
-        cout<<"lkafsj;akldnf;asdkfmalsfm;dmsdkmsdv\n";
+        cout<<"FLASH_MEMORY::flash_write :: try to access out of range block_index : <<"<<block_index<<", sector_index : "<<sector_index<<"\n";
         return false;
     }
     if(flash_memory[block_index].block[sector_index].is_using == true
         || flash_memory[block_index].block[sector_index].data[0] != '\0') { 
-        cout<<"FLASH_MEMORY::flash_write("<<block_index<<", "<<sector_index<<") :: already using now\n";
+        cout<<"FLASH_MEMORY::flash_write( "<<block_index<<", "<<sector_index<<" ) :: already using now\n";
         return false;
     }
     strcpy_s(flash_memory[block_index].block[sector_index].data, data);
-    cout<<"FLASH_MEMORY::flash_write("<<block_index<<", "<<sector_index<<") :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
+    cout<<"FLASH_MEMORY::flash_write( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
     flash_memory[block_index].block[sector_index].is_using = true;
     flash_memory[block_index].recently_access_sector++;
     return true;
 };
 
 bool FLASH_MEMORY::flash_read(const int block_index, const int sector_index){
+    if(block_index > flash_memory_size || block_index < 0 || sector_index > BLOCK_SIZE || sector_index < 0){
+        cout<<"FLASH_MEMORY::flash_erase :: try to access out of range block_index : <<"<<block_index<<", sector_index : "<<sector_index<<"\n";
+        return false;
+    }
     if(flash_memory[block_index].block[sector_index].is_using == true){
-        cout<<"FLASH_MEMORY::flash_read("<<block_index<<", "<<sector_index<<") :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
+        cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
         return true;
     }
     if(flash_memory[block_index].block[sector_index].data[0] != '\0'){
-        cout<<"FLASH_MEMORY::flash_read("<<block_index<<", "<<sector_index<<") :: data was updated\n";
+        cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: data was updated\n";
         return false;
     }
-    cout<<"FLASH_MEMORY::flash_read("<<block_index<<", "<<sector_index<<") :: no data\n";
+    cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: no data\n";
     return true;
 };
 
 bool FLASH_MEMORY::flash_erase(const int block_index){
     if(block_index < 0 || block_index > flash_memory_size) {
-        cout<<"FLASH_MEMORY::flash_erase("<<block_index<<") :: try to access out of range\n";
+        cout<<"FLASH_MEMORY::flash_erase :: try to access out of range block_index : <<"<<block_index<<"\n";
         return false;
     }
     for(int i = 0; i < BLOCK_SIZE; i++){
@@ -334,14 +336,14 @@ bool FLASH_MEMORY::flash_erase(const int block_index){
     }
     flash_memory[block_index].recently_access_sector = 0;
     flash_memory[block_index].wear_level++;
-    cout<<"FLASH_MEMORY::flash_erase("<<block_index<<") :: complete\n";
+    cout<<"FLASH_MEMORY::flash_erase( "<<block_index<<" ) :: complete\n";
     return true;
 };
 
 bool FTL::init(){
     int flash_memory_size = flash_memory.get_memory_size();
-    block_mapping_table_size = flash_memory_size;
-    sector_mapping_table_size = block_mapping_table_size * BLOCK_SIZE;
+    int block_mapping_table_size = flash_memory_size;
+    int sector_mapping_table_size = block_mapping_table_size * BLOCK_SIZE;
     block_mapping_table = new int[block_mapping_table_size];
     if(block_mapping_table == nullptr) {
         cout<<"FTL::init :: fail to create block_mapping_table\n";
@@ -360,8 +362,8 @@ bool FTL::init(){
         cout<<"FTL::init :: fail to init_block_Q\n";
         return false;
     }
-    cout<<"FTL::init :: created data_block_Q, size : "<<data_block_Q.size()<<"\n";
-    cout<<"FTL::init :: created log_block_Q, size : "<<log_block_Q.size()<<"\n";
+    cout<<"FTL::init :: init data_block_Q, size : "<<data_block_Q.size()<<"\n";
+    cout<<"FTL::init :: init log_block_Q, size : "<<log_block_Q.size()<<"\n";
     return true;
 };
 
