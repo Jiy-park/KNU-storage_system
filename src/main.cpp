@@ -1,6 +1,7 @@
 #include<iostream>
 #include<queue>
 #include<fstream>
+#include<random>
 using namespace std;
 
 
@@ -130,10 +131,12 @@ public:
                 if(check_log_block_sequential(pbn) == true){
                     cout<<"FTL::FTL_write :: switch_operation\n";
                     switch_operation(lbn, pbn, sector_mapping_table[pbn].log_block);
+                    switch_count++;
                 }
                 else{
                     cout<<"FTL::FTL_write :: merge_operation\n";
                     merge_operation(lbn, pbn, sector_mapping_table[pbn].log_block);
+                    merge_count++;
                 }
             }
             return true;
@@ -154,6 +157,10 @@ public:
     /////////for test
     void test();
     void test2();
+
+    //for_test
+    int switch_count = 0;
+    int merge_count = 0;
 private:
     bool check_log_block_sequential(const int pbn){
         for(int i = 0; i < BLOCK_SIZE; i++){
@@ -212,10 +219,20 @@ private:
 
         //
         //
-        data_block_Q.push({data_block.wear_level, pbn});
-        cout<<"FTL::merge_operation :: push to data_block_Q ( "<<pbn<<", "<<data_block.wear_level<<" )\n";
-        log_block_Q.push({log_block.wear_level, log_pbn});
-        cout<<"FTL::merge_operation :: push to log_block_Q ( "<<log_pbn<<", "<<log_block.wear_level<<" )\n";
+        // data_block_Q.push({data_block.wear_level, pbn});
+        // cout<<"FTL::merge_operation :: push to data_block_Q ( "<<pbn<<", "<<data_block.wear_level<<" )\n";
+        // log_block_Q.push({log_block.wear_level, log_pbn});
+        if(cmp_Q_size(data_block.wear_level, pbn) == false){
+            cout<<"FTL::merge_operation :: fail to cmp_Q_size( "<<data_block.wear_level<<", "<<pbn<<" )\n";
+            return false;
+        }
+        cout<<"FTL::merge_operation :: push to block_Q ( "<<pbn<<", "<<data_block.wear_level<<" )\n";
+        if(cmp_Q_size(log_block.wear_level, log_pbn) == false){
+            cout<<"FTL::merge_operation :: fail to cmp_Q_size( "<<log_block.wear_level<<", "<<log_pbn<<" )\n";
+            return false;
+        }
+        cout<<"FTL::merge_operation :: push to block_Q ( "<<log_pbn<<", "<<log_block.wear_level<<" )\n";
+
 
 
         for(int i = 0; i < BLOCK_SIZE; i++) { sector_mapping_table[pbn].sector_mapping[i] = -1; }
@@ -235,7 +252,7 @@ private:
         for(int i = 0; i < BLOCK_SIZE; i++) { sector_mapping_table[pbn].sector_mapping[i] = -1; }
         sector_mapping_table[pbn].log_block = -1;
         cout<<"FTL::switch_operation :: init the sector_mapping_table\n";
-        int data_block_wear_level = flash_memory.get_block_wear_level(pbn);
+        int pbn_wear_level = flash_memory.get_block_wear_level(pbn);
         //////////////////////////////////////push 할 때 로그블록 큐의 잔여량과 데이터 블록 큐의 잔여량을 비교하여 적은 쪽으로 푸쉬할 예정 ////
         //
         //
@@ -247,7 +264,11 @@ private:
         //
         //
 
-        log_block_Q.push({data_block_wear_level, pbn});
+        // log_block_Q.push({data_block_wear_level, pbn});
+        if(cmp_Q_size(pbn_wear_level, pbn) == false){
+            cout<<"FTL::switch_operation :: fail to cmp_Q_size( "<<pbn_wear_level<<", "<<pbn<<" )\n";
+            return false;
+        }
         return true;
     };
     bool init_block_Q(const int flash_memory_size){
@@ -259,12 +280,34 @@ private:
         if(log_block_Q.size() == 0 || data_block_Q.size() == 0){ return false; }
         return true;
     };
+    bool cmp_Q_size(const int wear_level, const int index){
+        if(index >= flash_memory.get_memory_size()) {
+            cout<<"FTL::cmp_Q_size :: index( "<<index<<" ) is out of range\n";
+            return false;
+        }
+        cout<<data_block_ratio<<"\n\n\n\n\n\n\n";
+        float DQ_remaining_amount = (float)data_block_Q.size() / data_block_ratio; // DQ 잔여량
+        float LQ_remaining_amount = (float)log_block_Q.size() / (flash_memory.get_memory_size() - data_block_ratio); // LQ 잔여량
+        if(LQ_remaining_amount >= DQ_remaining_amount) {
+            data_block_Q.push({wear_level, index}); 
+            cout<<"FTL::cmp_Q_size :: index( "<<index<<" ) is pushed to data_block_Q, wear_level : "<<wear_level<<" size : "<<data_block_Q.size()<<"\n";
+        } 
+        else {
+            log_block_Q.push({wear_level, index});
+            cout<<"FTL::cmp_Q_size :: index( "<<index<<" ) is pushed to log_block_Q, wear_level : "<<wear_level<<" size : "<<log_block_Q.size()<<"\n";
+        }
+        cout<<"FTL::cmp_Q_size :: data_block_Q  remaining_amount : "<<DQ_remaining_amount<<"\n";
+        cout<<"FTL::cmp_Q_size :: log_block_Q  remaining_amount : "<<LQ_remaining_amount<<"\n";
+        return true;
+    }
     FLASH_MEMORY flash_memory;
     priority_queue<BW_pair> log_block_Q;
     priority_queue<BW_pair> data_block_Q;
     int* block_mapping_table = nullptr;
     SMP* sector_mapping_table = nullptr;
     int data_block_ratio = 0;
+
+    
 };
 
 
@@ -272,6 +315,8 @@ int main(){
     FTL bast;
     bast.init();
     bast.test();
+    cout<<bast.merge_count<<"\n";
+    cout<<bast.switch_count<<"\n";
     return 0;
 }
 

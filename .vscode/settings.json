@@ -57,7 +57,8 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "fstream": "cpp",
-        "ㅊ": "cpp"
+        "ㅊ": "cpp",
+        "random": "cpp"
     },
     "cmake.configureOnOpen": false
 }
