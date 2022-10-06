@@ -104,7 +104,6 @@ public:
         cout<<"FTL::FTL_write :: lbn( "<<lbn<<" ) -> pbn( "<<block_mapping_table[lbn].pbn<<" )\n";
         int pbn = block_mapping_table[lbn].pbn;
         if(flash_memory.flash_write(pbn, lsn, data) == true) {
-            block_mapping_table[pbn].recently_access_sector++;
             cout<<"FTL::FTL_write( "<<pbn<<", "<<lsn<<" ) :: "<<data<<"\n";
             return true;
         }
@@ -179,8 +178,7 @@ private:
         cout<<"FTL::check_log_sequential :: pbn( "<<pbn<<" ) -> log_block( "<<sector_mapping_table[pbn].log_block<<" ) is sequential\n";
         return true;
     };
-    bool merge_operation(const int lbn, const int pbn, const int log_pbn){
-        
+    bool merge_operation(const int lbn, const int pbn, const int log_pbn){   
         if(data_block_Q.size() == 0) {
             cout<<"FTL::merge_operation :: fail to assign data_block_Q, data_block_Q size : "<<data_block_Q.size()<<"\n";
             return false;
@@ -191,7 +189,7 @@ private:
         const BLOCK& data_block = flash_memory.get_one_block(pbn);
         const BLOCK& log_block = flash_memory.get_one_block(log_pbn);
         for(int i = 0; i < BLOCK_SIZE; i++){
-            if(data_block.block[i].is_using == true) { strcpy_s(copy_block.block[i].data, data_block.block[i].data); }
+            if(data_block.block[i].is_using == true) { strcpy_s(copy_block.block[i].data, data_block.block[i].data);}
             else { 
                 int log_block_sector_index = sector_mapping_table[pbn].sector_mapping[i]; // log_block_sector_index = 로그 블록의 섹터 인덱스
                 strcpy_s(copy_block.block[i].data, log_block.block[log_block_sector_index].data);
