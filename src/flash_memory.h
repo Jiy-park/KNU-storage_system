@@ -17,9 +17,7 @@ class FLASH_MEMORY{
         
         int get_memory_size() const { return flash_memory_size; }
         bool get_is_using(const int block_index, const int sector_index) const { return flash_memory[block_index].block[sector_index].is_using; }
-        void set_is_using(const int block_index, const int sector_index, bool option) const { 
-            flash_memory[block_index].block[sector_index].is_using = option; 
-        }
+        void set_is_using(const int block_index, const int sector_index, bool option) const { flash_memory[block_index].block[sector_index].is_using = option; }
 
         BLOCK& get_one_block(const int block_index) const { return flash_memory[block_index]; }
         int get_block_wear_level(const int block_index) const { return flash_memory[block_index].wear_level; }

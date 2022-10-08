@@ -238,7 +238,7 @@ bool FTL::cmp_Q_size(const int wear_level, const int index){
 
 void FTL::test(){
     ifstream fin;
-    fin.open("test.txt");
+    fin.open("../../test.txt");
     if(fin.fail() == true){
         cout<<"fail to open file\n";
         return;
