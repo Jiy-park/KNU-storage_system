@@ -20,14 +20,19 @@ struct BLOCK{
     int wear_level = 0;  
 };
 
-
 //FTL-bast
 typedef struct SECTOR_MAPPING_STRUCTURE{
     int log_block = -1;
     int sequential_checker = -1;
     int sector_mapping[BLOCK_SIZE];
-}SMP;                                                                           
+}SMP;                             
 
+typedef struct BLOCK_MAPPING_STRUCTURE{
+    int pbn = -1;
+    int recently_access_sector = 0;
+}BMP;
+
+//priority_queue
 struct BW_pair{
     int wear_level = 0;
     int block_index = 0;
@@ -37,9 +42,5 @@ struct BW_pair{
     }
 };
 
-typedef struct BLOCK_MAPPING_STRUCTURE{
-    int pbn = -1;
-    int recently_access_sector = 0;
-}BMP;
 
 #endif
