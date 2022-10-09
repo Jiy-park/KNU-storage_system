@@ -3,8 +3,9 @@
 
 bool FLASH_MEMORY::init(){
     cout<<"FLASH_MEMORY::init :: enter falsh_memory size(mb) : ";
-    //for_testcin>>input_size;
-    input_size = 1;
+    //for_test
+    int input_size = 1;
+    //cin>>input_size;
     flash_memory_size = (int)(input_size * MEGABYTE_SIZE / sizeof(BLOCK));
     flash_memory = new BLOCK[flash_memory_size];
     if(flash_memory == nullptr) { 
@@ -17,18 +18,20 @@ bool FLASH_MEMORY::init(){
 
 
 bool FLASH_MEMORY::flash_write(const int block_index, const int sector_index, const char data[]){
-    if(block_index > flash_memory_size || block_index < 0 || sector_index > BLOCK_SIZE || sector_index < 0){
+    if(block_index > flash_memory_size || block_index < 0 || sector_index > BLOCK_SIZE || sector_index < 0 || sizeof(data) >= SECTOR_SIZE){
         cout<<"FLASH_MEMORY::flash_write :: try to access out of range block_index : <<"<<block_index<<", sector_index : "<<sector_index<<"\n";
         return false;
     }
-    if(flash_memory[block_index].block[sector_index].is_using == true
-        || flash_memory[block_index].block[sector_index].data[0] != '\0') { 
+    if(flash_memory[block_index].sector[sector_index].is_using == true
+        || flash_memory[block_index].sector[sector_index].data[0] != '\0') { 
         cout<<"FLASH_MEMORY::flash_write( "<<block_index<<", "<<sector_index<<" ) :: already using now\n";
         return false;
     }
-    strcpy_s(flash_memory[block_index].block[sector_index].data, data);
-    cout<<"FLASH_MEMORY::flash_write( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
-    flash_memory[block_index].block[sector_index].is_using = true;
+    strcpy_s(flash_memory[block_index].sector[sector_index].data, data);
+    cout<<"FLASH_MEMORY::flash_write( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].sector[sector_index].data<<"\n";
+    flash_memory[block_index].sector[sector_index].is_using = true;
+
+
     return true;
 };
 
@@ -37,11 +40,11 @@ bool FLASH_MEMORY::flash_read(const int block_index, const int sector_index){
         cout<<"FLASH_MEMORY::flash_erase :: try to access out of range block_index : <<"<<block_index<<", sector_index : "<<sector_index<<"\n";
         return false;
     }
-    if(flash_memory[block_index].block[sector_index].is_using == true){
-        cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].block[sector_index].data<<"\n";
+    if(flash_memory[block_index].sector[sector_index].is_using == true){
+        cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: "<<flash_memory[block_index].sector[sector_index].data<<"\n";
         return true;
     }
-    if(flash_memory[block_index].block[sector_index].data[0] != '\0'){
+    if(flash_memory[block_index].sector[sector_index].data[0] != '\0'){
         cout<<"FLASH_MEMORY::flash_read( "<<block_index<<", "<<sector_index<<" ) :: data was updated\n";
         return false;
     }
@@ -55,8 +58,8 @@ bool FLASH_MEMORY::flash_erase(const int block_index){
         return false;
     }
     for(int i = 0; i < BLOCK_SIZE; i++){
-        strcpy_s(flash_memory[block_index].block[i].data, "");
-        flash_memory[block_index].block[i].is_using = false;
+        strcpy_s(flash_memory[block_index].sector[i].data, "");
+        flash_memory[block_index].sector[i].is_using = false;
     }
     flash_memory[block_index].wear_level++;
     cout<<"FLASH_MEMORY::flash_erase( "<<block_index<<" ) :: complete\n";
@@ -67,7 +70,7 @@ void FLASH_MEMORY::print_memory(const int from, const int to)const{
     for(int i = from; i < to; i++){
         cout<<"block_num : "<<i<<" index data using\n";
         for(int j = 0; j < BLOCK_SIZE; j++){
-            cout<<"sector_num : "<<j<<" "<<flash_memory[i].block[j].data<<"\t"<<flash_memory[i].block[j].is_using<<"\n";
+            cout<<"sector_num : "<<j<<" "<<flash_memory[i].sector[j].data<<"\t"<<flash_memory[i].sector[j].is_using<<"\n";
         }
         cout<<"\n\n\n";
     }

@@ -6,6 +6,7 @@ using namespace std;
 int main(){
     FTL bast;
     bast.init();
+    // cout<<sizeof(FTL);
     bast.test();
     cout<<bast.merge_count<<"\n";
     cout<<bast.switch_count<<"\n";

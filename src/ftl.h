@@ -25,6 +25,9 @@ public:
     //for_test
     int switch_count = 0;
     int merge_count = 0;
+    int write_count = 0;
+    int read_count = 0;
+    int erase_count = 0;
 private:
     bool merge_operation(const int lbn, const int pbn, const int log_pbn);
     bool switch_operation(const int lbn, const int pbn, const int log_pbn);

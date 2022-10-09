@@ -150,12 +150,12 @@ bool FTL::merge_operation(const int lbn, const int pbn, const int log_pbn){
     const BLOCK& data_block = flash_memory.get_one_block(pbn);
     const BLOCK& log_block = flash_memory.get_one_block(log_pbn);
     for(int i = 0; i < BLOCK_SIZE; i++){
-        if(data_block.block[i].is_using == true) { strcpy_s(copy_block.block[i].data, data_block.block[i].data);}
+        if(data_block.sector[i].is_using == true) { strcpy_s(copy_block.sector[i].data, data_block.sector[i].data);}
         else { 
             int log_block_sector_index = sector_mapping_table[pbn].sector_mapping[i]; // log_block_sector_index = 로그 블록의 섹터 인덱스
-            strcpy_s(copy_block.block[i].data, log_block.block[log_block_sector_index].data);
+            strcpy_s(copy_block.sector[i].data, log_block.sector[log_block_sector_index].data);
         } 
-        copy_block.block[i].is_using = true;
+        copy_block.sector[i].is_using = true;
     }
     cout<<"FTL::merge_operation :: copy complete (copy_block : "<<copy_block_index<<" )\n";
     if(flash_memory.flash_erase(pbn) == false){

@@ -16,7 +16,7 @@ struct SECTOR{
 };
 
 struct BLOCK{
-    SECTOR block[BLOCK_SIZE] = {};
+    SECTOR sector[BLOCK_SIZE] = {};
     int wear_level = 0;  
 };
 
