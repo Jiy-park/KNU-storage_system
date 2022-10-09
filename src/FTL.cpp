@@ -4,7 +4,7 @@ bool FTL::init(){
     int flash_memory_size = flash_memory.get_memory_size();
     int block_mapping_table_size = flash_memory_size;
     int sector_mapping_table_size = block_mapping_table_size * BLOCK_SIZE;
-    block_mapping_table = new BME[block_mapping_table_size];
+    block_mapping_table = new BMP[block_mapping_table_size];
     if(block_mapping_table == nullptr) {
         cout<<"FTL::init :: fail to create block_mapping_table\n";
         return false;
@@ -231,8 +231,8 @@ bool FTL::cmp_Q_size(const int wear_level, const int index){
         log_block_Q.push({wear_level, index});
         cout<<"FTL::cmp_Q_size :: index( "<<index<<" ) is pushed to log_block_Q, wear_level : "<<wear_level<<" size : "<<log_block_Q.size()<<"\n";
     }
-    cout<<"FTL::cmp_Q_size :: data_block_Q  remaining_amount : "<<DQ_remaining_amount<<"\n";
-    cout<<"FTL::cmp_Q_size :: log_block_Q  remaining_amount : "<<LQ_remaining_amount<<"\n";
+    cout<<"FTL::cmp_Q_size :: data_block_Q  remaining_amount : "<<DQ_remaining_amount<<", size : "<<data_block_Q.size()<<"\n";
+    cout<<"FTL::cmp_Q_size :: log_block_Q  remaining_amount : "<<LQ_remaining_amount<<", size : "<<log_block_Q.size()<<"\n";
     return true;
 }
 

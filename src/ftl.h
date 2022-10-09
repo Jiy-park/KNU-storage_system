@@ -33,11 +33,9 @@ private:
     FLASH_MEMORY flash_memory;
     priority_queue<BW_pair> log_block_Q;
     priority_queue<BW_pair> data_block_Q;
-    BME* block_mapping_table = nullptr;
+    BMP* block_mapping_table = nullptr;
     SMP* sector_mapping_table = nullptr;
     int data_block_ratio = 0;
-
-    
 };
 
 #endif

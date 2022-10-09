@@ -26,7 +26,7 @@ typedef struct SECTOR_MAPPING_STRUCTURE{
     int log_block = -1;
     int sequential_checker = -1;
     int sector_mapping[BLOCK_SIZE];
-}SMP;
+}SMP;                                                                           
 
 struct BW_pair{
     int wear_level = 0;
@@ -37,9 +37,9 @@ struct BW_pair{
     }
 };
 
-typedef struct BLOCK_MAPPING_ELIMENTS{
+typedef struct BLOCK_MAPPING_STRUCTURE{
     int pbn = -1;
     int recently_access_sector = 0;
-}BME;
+}BMP;
 
 #endif
