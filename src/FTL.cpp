@@ -207,7 +207,7 @@ bool FTL::switch_operation(const int lbn, const int pbn, const int log_pbn){
 };
 
 bool FTL::init_block_Q(const int flash_memory_size){
-    data_block_ratio = (int)((1- LOG_BLOCK_RATIO) * flash_memory.get_memory_size());
+    data_block_ratio = (int)((1- LOG_BLOCK_RATIO) * flash_memory_size);
     for(int i = 0; i < flash_memory.get_memory_size(); i++){
         if(i < data_block_ratio) { data_block_Q.push({0, i}); }
         else { log_block_Q.push({0, i}); }
