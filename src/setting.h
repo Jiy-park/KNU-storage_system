@@ -1,7 +1,6 @@
 #ifndef __SETTING_H__
 #define __SETTING_H__
 
-
 //MEGABYTE_SIZE = sizeof(BLOCK) * BLOCK_SIZE * num of block in memory 
 #define MEGABYTE_SIZE 50000
 #define SECTOR_SIZE 512
@@ -21,16 +20,15 @@ struct BLOCK{
 };
 
 //FTL-bast
-typedef struct SECTOR_MAPPING_STRUCTURE{
+typedef struct LOG_BLOCK_MAPPING_STRUCTURE{
     int log_block = -1;
-    int sequential_checker = -1;
+    int recently_access_sector = 0;
     int sector_mapping[BLOCK_SIZE];
-}SMP;                             
+}LBMS;                             
 
 typedef struct BLOCK_MAPPING_STRUCTURE{
     int pbn = -1;
-    int recently_access_sector = 0;
-}BMP;
+}BMS;
 
 //priority_queue
 struct BW_pair{

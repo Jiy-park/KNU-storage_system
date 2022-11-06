@@ -7,7 +7,6 @@
 
 class FTL{
 public:
-    int k = 1;
     bool init();
     bool FTL_write(const int index, const char data[]);
     bool FTL_read(const int index);
@@ -15,19 +14,21 @@ public:
     FTL(){ flash_memory.init(); };
     ~FTL(){
         cout<<"FTL::called ~FTL()\n";
-        delete[] block_mapping_table;
-        delete[] sector_mapping_table;
+        delete[] BMT;
+        delete[] log_BMT;
     };
     /////////for test
     void test();
     void test2();
 
     //for_test
+    int input_count = 0;
     int switch_count = 0;
     int merge_count = 0;
     int write_count = 0;
     int read_count = 0;
     int erase_count = 0;
+    //
 private:
     bool merge_operation(const int lbn, const int pbn, const int log_pbn);
     bool switch_operation(const int lbn, const int pbn, const int log_pbn);
@@ -36,8 +37,8 @@ private:
     FLASH_MEMORY flash_memory;
     priority_queue<BW_pair> log_block_Q;
     priority_queue<BW_pair> data_block_Q;
-    BMP* block_mapping_table = nullptr;
-    SMP* sector_mapping_table = nullptr;
+    BMS* BMT = nullptr;
+    LBMS* log_BMT = nullptr;
     int data_block_ratio = 0;
 };
 

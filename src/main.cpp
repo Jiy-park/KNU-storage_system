@@ -8,7 +8,12 @@ int main(){
     bast.init();
     // cout<<sizeof(FTL);
     bast.test();
-    cout<<bast.merge_count<<"\n";
-    cout<<bast.switch_count<<"\n";
+    cout<<"BAST::total_input_count : "<<bast.input_count<<"\n";
+    cout<<"BAST::read_count : "<<bast.read_count<<"\n";
+    cout<<"BAST::write_count : "<<bast.write_count<<"\n";
+    cout<<"BAST::erase_count : "<<bast.erase_count<<"\n";
+    cout<<"BAST::merge_operation_count : "<<bast.merge_count<<"\n";
+    cout<<"BAST::switch_operation_count : "<<bast.switch_count<<"\n";
+    cout<<"\n";
     return 0;
 }
