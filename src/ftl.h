@@ -17,11 +17,10 @@ public:
         delete[] BMT;
         delete[] log_BMT;
     };
-    /////////for test
+    //for_test
     void test();
     void test2();
-
-    //for_test
+    void test3();
     int input_count = 0;
     int switch_count = 0;
     int merge_count = 0;

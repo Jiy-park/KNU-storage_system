@@ -4,7 +4,7 @@
 bool FLASH_MEMORY::init(){
     cout<<"FLASH_MEMORY::init :: enter falsh_memory size(mb) : ";
     //for_test
-    int input_size = 1;
+    int input_size = 10;
     //cin>>input_size;
     flash_memory_size = (int)(input_size * MEGABYTE_SIZE / sizeof(BLOCK));
     flash_memory = new BLOCK[flash_memory_size];

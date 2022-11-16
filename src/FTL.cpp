@@ -1,4 +1,5 @@
 #include"ftl.h"
+#include<ctime>
 
 bool FTL::init(){
     int flash_memory_size = flash_memory.get_memory_size();
@@ -336,4 +337,28 @@ void FTL::test2(){
             break;
         }
     }
+};
+
+
+void FTL::test3(){
+    time_t start, end;
+    ifstream fin;
+    fin.open("../../linux.txt");
+    if(fin.fail() == true){
+        cout<<"fail to open file\n";
+        return;
+    }
+    
+    char command = ' ';
+    int index = 0;
+    char data[512] = "init";
+    start = time(NULL);
+    while(fin.eof() == false){
+        fin>>command>>index;
+        cout<<index<<" "<<data<<"\n";
+        FTL_write(index, data);
+    }
+    end = time(NULL);
+    cout<<"run time : "<<end - start<<"\n";
+    fin.close();
 };

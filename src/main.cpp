@@ -4,10 +4,13 @@ using namespace std;
 //MEGABYTE_SIZE = sizeof(BLOCK) * BLOCK_SIZE * num of block in memory 
 
 int main(){
+    char start;
     FTL bast;
     bast.init();
     // cout<<sizeof(FTL);
-    bast.test();
+    
+    cin>>start;
+    bast.test3();
     cout<<"BAST::total_input_count : "<<bast.input_count<<"\n";
     cout<<"BAST::read_count : "<<bast.read_count<<"\n";
     cout<<"BAST::write_count : "<<bast.write_count<<"\n";
