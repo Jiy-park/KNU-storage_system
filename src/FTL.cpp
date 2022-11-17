@@ -29,10 +29,8 @@ bool FTL::init(){
 };
 
 bool FTL::FTL_write(const int index, const char data[]){
-    //for test
-    cout<<"input_count : "<<input_count<<"\n";
-    input_count++;
-    //
+    cout<<"input_count : "<<test.input_count<<"\n";
+    test.input_count++;
     int lbn = index / BLOCK_SIZE;
     int lsn = index % BLOCK_SIZE;
     if(index < 0 || lbn >= flash_memory.get_memory_size() || lsn >= BLOCK_SIZE) { 
@@ -54,21 +52,23 @@ bool FTL::FTL_write(const int index, const char data[]){
     }
     cout<<"FTL::FTL_write :: lbn( "<<lbn<<" ) -> pbn( "<<BMT[lbn].pbn<<" )\n";
     int pbn = BMT[lbn].pbn;
+    test.start = clock();
     if(flash_memory.flash_write(pbn, lsn, data) == true) {
         cout<<"FTL::FTL_write( "<<pbn<<", "<<lsn<<" ) :: "<<data<<"\n";
-        //for_test
-        read_count++;
-        write_count++;
-        //
+        test.end = clock();
+        test.write_time.push_back({test.input_count, (test.end - test.start)});
+        test.read_count++;
+        test.write_count++;
         return true;
     }
 
     //log_block에 기입
-    if(lsn == 0 && log_BMT[pbn].log_block != -1) { 
+    if(lsn == 0 && log_BMT[pbn].log_block != -1) {
+        test.start = clock();
         merge_operation(lbn, pbn, log_BMT[pbn].log_block); 
-        //for_test
-        merge_count++;
-        //   
+        test.end = clock();
+        test.merge_operation_time.push_back({test.input_count, (test.end - test.start)});
+        test.merge_count++;  
     }
     pbn = BMT[lbn].pbn;
     if(log_BMT[pbn].log_block == -1){
@@ -86,7 +86,14 @@ bool FTL::FTL_write(const int index, const char data[]){
     }
     cout<<"FTL::FTL_write :: lbn( "<<lbn<<" ) -> pbn( "<<BMT[lbn].pbn<<" ) -> log_block( "<<log_BMT[pbn].log_block<<" )\n";
     int access_sector_index = log_BMT[pbn].recently_access_sector;
+    //for_test
+    test.start = clock();
+    //
     if(flash_memory.flash_write(log_BMT[pbn].log_block, access_sector_index, data) == true) {
+        //for_test
+        test.end = clock();
+        test.write_time.push_back({test.input_count, (test.end - test.start)});
+        //
         log_BMT[pbn].recently_access_sector++;
         flash_memory.set_is_using(pbn, lsn, false);
         log_BMT[pbn].sector_mapping[lsn] = access_sector_index;
@@ -96,30 +103,31 @@ bool FTL::FTL_write(const int index, const char data[]){
             for(int i = 0; i < BLOCK_SIZE; i++){
                 if(log_BMT[pbn].sector_mapping[i] != i) { 
                     cout<<"FTL::FTL_write :: merge_operation ("<<lbn<<", "<< pbn<<", "<<log_BMT[pbn].log_block<<")\n";
+                    test.start = clock();
                     merge_operation(lbn, pbn, log_BMT[pbn].log_block);
+                    test.end = clock();
+                    test.merge_operation_time.push_back({test.input_count, (test.end - test.start)});
                     cout<<"\n\n\n\n";
-                    //for_test
-                    merge_count++;
-                    read_count += 2;
-                    write_count++;
-                    //
+                    test.merge_count++;
+                    test.read_count += 2;
+                    test.write_count++;
                     return true;
                 }
             }
             cout<<"FTL::FTL_write :: switch_operation\n";
+            test.start = clock();
             switch_operation(lbn, pbn, log_BMT[pbn].log_block);
+            test.end = clock();
+            test.switch_operation_time.push_back({test.input_count, (test.end - test.start)});
             cout<<"\n\n\n\n";
-            //for_test
-            switch_count++;
-            //
+            test.switch_count++;
         }
-        //for_test
-        read_count += 2;
-        write_count++;
-        //
+        test.read_count += 2;
+        test.write_count++;
         return true;
     }
     cout<<"FTL::FTL_write :: fail to update memory "<<lbn<<" "<<lsn<<"\n";
+    test.write_fail_count++;
     return false;
 };
 
@@ -137,6 +145,7 @@ bool FTL::FTL_read(const int index){
         cout<<"FTL::FTL_read :: block_mapping assignment error\n";
         return false;
     }
+    test.start = clock();
     if(flash_memory.flash_read(pbn, lsn) == false){
         pbn = log_BMT[lbn].log_block;
         if(pbn == -1) {
@@ -149,9 +158,9 @@ bool FTL::FTL_read(const int index){
             return false;
         }
     }
-    //for_test
-    read_count++;
-    //
+    test.end = clock();
+    test.read_time.push_back({test.input_count, (test.end - test.start)});
+    test.read_count++;
     return true;
 }
 
@@ -174,15 +183,21 @@ bool FTL::merge_operation(const int lbn, const int pbn, const int log_pbn){
         copy_block.sector[i].is_using = true;
     }
     cout<<"FTL::merge_operation :: copy complete (copy_block : "<<copy_block_index<<" )\n";
+    test.start = clock();
     if(flash_memory.flash_erase(pbn) == false){
         cout<<"FTL::merge_operation :: fail to erase block ( "<<pbn<<" )\n";
         return false;
     }
+    test.end = clock();
+    test.erase_time.push_back({test.input_count, (test.end - test.start)});
     log_BMT[pbn].recently_access_sector = 0;
+    test.start = clock();
     if(flash_memory.flash_erase(log_pbn) == false){
         cout<<"FTL::merge_operation :: fail to erase block ( "<<log_pbn<<" )\n";
         return false;
     }
+    test.end = clock();
+    test.erase_time.push_back({test.input_count, (test.end - test.start)});
     log_BMT[log_pbn].recently_access_sector = 0;
     if(cmp_Q_size(data_block.wear_level, pbn) == false){
         cout<<"FTL::merge_operation :: fail to cmp_Q_size( "<<data_block.wear_level<<", "<<pbn<<" )\n";
@@ -199,9 +214,7 @@ bool FTL::merge_operation(const int lbn, const int pbn, const int log_pbn){
     cout<<"FTL::merge_operation :: init the log_BMT\n";
     BMT[lbn].pbn = copy_block_index;
     cout<<"FTL::merge_operation :: assign new block"<<pbn<<" -> "<<copy_block_index<<"\n";
-    //for_test
-    erase_count += 2;
-    //
+    test.erase_count += 2;
     return true;
 };
 
@@ -209,10 +222,13 @@ bool FTL::switch_operation(const int lbn, const int pbn, const int log_pbn){
     cout<<"\n\n\n\n";
     BMT[lbn].pbn = log_pbn; // switch
     cout<<"FTL::switch_operation :: switched block : "<<pbn<<" -> "<<log_pbn<<"\n";
+    test.start = clock();
     if(flash_memory.flash_erase(pbn) == false){
         cout<<"FTL::switch_operation :: fail to erase block "<<pbn<<" \n";
         return false;
     }
+    test.end = clock();
+    test.erase_time.push_back({test.input_count, (test.end - test.start)});
     log_BMT[pbn].recently_access_sector = 0;
     for(int i = 0; i < BLOCK_SIZE; i++) { log_BMT[pbn].sector_mapping[i] = -1; }
     log_BMT[pbn].log_block = -1;
@@ -222,9 +238,7 @@ bool FTL::switch_operation(const int lbn, const int pbn, const int log_pbn){
         cout<<"FTL::switch_operation :: fail to cmp_Q_size( "<<pbn_wear_level<<", "<<pbn<<" )\n";
         return false;
     }
-    //for_test
-    erase_count++;
-    //
+    test.erase_count++;
     return true;
 };
 
@@ -258,7 +272,8 @@ bool FTL::cmp_Q_size(const int wear_level, const int index){
     return true;
 }
 
-void FTL::test(){
+void FTL::test1(){
+    time_t start, end;
     ifstream fin;
     fin.open("../../test.txt");
     if(fin.fail() == true){
@@ -270,6 +285,7 @@ void FTL::test(){
     int index = 0;
     int index2 = 0;
     char ch[100] = {};
+    start = clock();
     while(fin.eof() == false){
         // cout<<"1. FTL_write\t2. FTL_read\t3. cls\t4. print_mapping_table\t5. print_memory(from ~ to)\n\n";
         // cin>>option;
@@ -300,6 +316,8 @@ void FTL::test(){
             break;
         }
     }
+    end = clock();
+    cout<<"\n\nrun time : "<<(end - start)<<" ms \n";
     fin.close();
 };
 
@@ -352,13 +370,78 @@ void FTL::test3(){
     char command = ' ';
     int index = 0;
     char data[512] = "init";
-    start = time(NULL);
+    start = clock();
     while(fin.eof() == false){
         fin>>command>>index;
         cout<<index<<" "<<data<<"\n";
         FTL_write(index, data);
     }
-    end = time(NULL);
-    cout<<"run time : "<<end - start<<"\n";
+    end = clock();
+    cout<<"\n\nrun time : "<<end - start<<" ms \n";
     fin.close();
 };
+
+void FTL::FOR_TEST::fout_write_time(){
+    fstream f;
+    f.open("../../write_time.txt");
+    if(f.fail() == true){
+        cout<<"fail to open file ( write_time.txt )\n";
+        return;
+    }
+    cout<<"start write file ( write_time.txt )\n";
+    for(int i = 0; i < write_time.size(); i++) { f<<write_time[i].input_count<<" "<<write_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( write_time.txt )\n";
+    f.close();
+}
+
+void FTL::FOR_TEST::fout_read_time(){
+    fstream f;
+    f.open("../../read_time.txt");
+    if(f.fail() == true){
+        cout<<"fail to open file ( read_time.txt )\n";
+        return;
+    }
+    cout<<"start read file ( read_time.txt )\n";
+    for(int i = 0; i < read_time.size(); i++) { f<<read_time[i].input_count<<" "<<read_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( read_time.txt )\n";
+    f.close();
+}
+
+void FTL::FOR_TEST::fout_erase_time(){
+    fstream f;
+    f.open("../../erase_time.txt");
+    if(f.fail() == true){
+        cout<<"fail to open file ( erase_time.txt )\n";
+        return;
+    }
+    cout<<"start erase file ( erase_time.txt )\n";
+    for(int i = 0; i < erase_time.size(); i++) { f<<erase_time[i].input_count<<" "<<erase_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( erase_time.txt )\n";
+    f.close();
+}
+
+void FTL::FOR_TEST::fout_merge_operation_time(){
+    fstream f;
+    f.open("../../merge_operation_time.txt");
+    if(f.fail() == true){
+        cout<<"fail to open file ( merge_operation_time.txt )\n";
+        return;
+    }
+    cout<<"start merge_operation file ( merge_operation_time.txt )\n";
+    for(int i = 0; i < merge_operation_time.size(); i++) { f<<merge_operation_time[i].input_count<<" "<<merge_operation_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( merge_operation_time.txt )\n";
+    f.close();
+}
+
+void FTL::FOR_TEST::fout_switch_operation_time(){
+    fstream f;
+    f.open("../../switch_operation_time.txt");
+    if(f.fail() == true){
+        cout<<"fail to open file ( switch_operation_time.txt )\n";
+        return;
+    }
+    cout<<"start switch_operation file ( switch_operation_time.txt )\n";
+    for(int i = 0; i < switch_operation_time.size(); i++) { f<<switch_operation_time[i].input_count<<" "<<switch_operation_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( switch_operation_time.txt )\n";
+    f.close();
+}

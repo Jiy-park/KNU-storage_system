@@ -25,8 +25,9 @@ public:
         cout<<"FLASH_MEMORY::called ~FLASH_MEMORY()\n";
         delete[] flash_memory;
     };
-    //////////for test
+    //for test
     void print_memory(const int from, const int to)const;
+    //
 private:
     BLOCK* flash_memory = nullptr;
     int flash_memory_size = 0;

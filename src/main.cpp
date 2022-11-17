@@ -10,13 +10,22 @@ int main(){
     // cout<<sizeof(FTL);
     
     cin>>start;
+    
     bast.test3();
-    cout<<"BAST::total_input_count : "<<bast.input_count<<"\n";
-    cout<<"BAST::read_count : "<<bast.read_count<<"\n";
-    cout<<"BAST::write_count : "<<bast.write_count<<"\n";
-    cout<<"BAST::erase_count : "<<bast.erase_count<<"\n";
-    cout<<"BAST::merge_operation_count : "<<bast.merge_count<<"\n";
-    cout<<"BAST::switch_operation_count : "<<bast.switch_count<<"\n";
+    cout<<"BAST::total_input_count : "<<bast.test.input_count<<"\n";
+    cout<<"BAST::read_count : "<<bast.test.read_count<<"\n";
+    cout<<"BAST::write_count : "<<bast.test.write_count<<"\n";
+    cout<<"BAST::write_fail_count : "<<bast.test.write_fail_count<<"\n";
+    cout<<"BAST::erase_count : "<<bast.test.erase_count<<"\n";
+    cout<<"BAST::merge_operation_count : "<<bast.test.merge_count<<"\n";
+    cout<<"BAST::switch_operation_count : "<<bast.test.switch_count<<"\n";
     cout<<"\n";
+
+    bast.test.fout_write_time();
+    bast.test.fout_read_time();
+    bast.test.fout_erase_time();
+    bast.test.fout_merge_operation_time();
+    bast.test.fout_switch_operation_time();
+    
     return 0;
 }

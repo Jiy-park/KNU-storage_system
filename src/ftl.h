@@ -3,7 +3,7 @@
 
 #include"flash_memory.h"
 #include<queue>
-
+#include<vector>
 
 class FTL{
 public:
@@ -17,17 +17,40 @@ public:
         delete[] BMT;
         delete[] log_BMT;
     };
-    //for_test
-    void test();
+
+    void test1();
     void test2();
     void test3();
-    int input_count = 0;
-    int switch_count = 0;
-    int merge_count = 0;
-    int write_count = 0;
-    int read_count = 0;
-    int erase_count = 0;
-    //
+    class FOR_TEST{
+    public:
+        int input_count = 0;
+        int switch_count = 0;
+        int merge_count = 0;
+        int write_count = 0;
+        int write_fail_count = 0;
+        int read_count = 0;
+        int erase_count = 0;
+
+        typedef struct OPERATION_TIME{
+            int input_count = 0;
+            time_t operation_time;
+        }OT;
+
+        time_t start,end;
+        vector<OT> write_time;
+        vector<OT> read_time;
+        vector<OT> erase_time;
+        vector<OT> merge_operation_time;
+        vector<OT> switch_operation_time;
+
+        void fout_write_time();
+        void fout_read_time();
+        void fout_erase_time();
+        void fout_merge_operation_time();
+        void fout_switch_operation_time();
+    };
+
+    FOR_TEST test;
 private:
     bool merge_operation(const int lbn, const int pbn, const int log_pbn);
     bool switch_operation(const int lbn, const int pbn, const int log_pbn);
