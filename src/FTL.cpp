@@ -68,7 +68,9 @@ bool FTL::FTL_write(const int index, const char data[]){
         merge_operation(lbn, pbn, log_BMT[pbn].log_block); 
         test.end = clock();
         test.merge_operation_time.push_back({test.input_count, (test.end - test.start)});
-        test.merge_count++;  
+        test.merge_count++;
+        test.write_count += 32;
+        test.read_count += 32;  
     }
     pbn = BMT[lbn].pbn;
     if(log_BMT[pbn].log_block == -1){
@@ -109,8 +111,8 @@ bool FTL::FTL_write(const int index, const char data[]){
                     test.merge_operation_time.push_back({test.input_count, (test.end - test.start)});
                     cout<<"\n\n\n\n";
                     test.merge_count++;
-                    test.read_count += 2;
-                    test.write_count++;
+                    test.read_count += 32;
+                    test.write_count += 32;
                     return true;
                 }
             }
@@ -123,7 +125,7 @@ bool FTL::FTL_write(const int index, const char data[]){
             test.switch_count++;
         }
         test.read_count += 2;
-        test.write_count++;
+        test.write_count += 2;
         return true;
     }
     cout<<"FTL::FTL_write :: fail to update memory "<<lbn<<" "<<lsn<<"\n";

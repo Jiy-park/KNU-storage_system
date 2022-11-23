@@ -1,11 +1,11 @@
-#ifndef __SETTING_H__
+#ifndef __SETTING_H__s
 #define __SETTING_H__
 
 //MEGABYTE_SIZE = sizeof(BLOCK) * BLOCK_SIZE * num of block in memory 
 #define MEGABYTE_SIZE 1024*1024
 #define SECTOR_SIZE 512
 #define BLOCK_SIZE 32
-#define LOG_BLOCK_RATIO 0.4
+#define LOG_BLOCK_RATIO 0.05
 
 
 //flash_memory
