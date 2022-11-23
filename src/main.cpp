@@ -26,6 +26,6 @@ int main(){
     bast.test.fout_erase_time();
     bast.test.fout_merge_operation_time();
     bast.test.fout_switch_operation_time();
-    
+    bast.fout_wear_level();
     return 0;
 }

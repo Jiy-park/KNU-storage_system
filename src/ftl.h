@@ -30,6 +30,8 @@ public:
         int write_fail_count = 0;
         int read_count = 0;
         int erase_count = 0;
+        int wear_level_check[650] = {0,};
+
 
         typedef struct OPERATION_TIME{
             int input_count = 0;
@@ -49,6 +51,7 @@ public:
         void fout_merge_operation_time();
         void fout_switch_operation_time();
     };
+    void fout_wear_level();
 
     FOR_TEST test;
 private:

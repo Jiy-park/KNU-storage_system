@@ -383,65 +383,78 @@ void FTL::test3(){
 
 void FTL::FOR_TEST::fout_write_time(){
     fstream f;
-    f.open("../../write_time.txt");
+    f.open("../../write_time.csv");
     if(f.fail() == true){
-        cout<<"fail to open file ( write_time.txt )\n";
+        cout<<"fail to open file ( write_time.csv )\n";
         return;
     }
-    cout<<"start write file ( write_time.txt )\n";
-    for(int i = 0; i < write_time.size(); i++) { f<<write_time[i].input_count<<" "<<write_time[i].operation_time<<"\n"; }
-    cout<<"end write file ( write_time.txt )\n";
+    cout<<"start write file ( write_time.csv )\n";
+    for(int i = 0; i < write_time.size(); i++) { f<<write_time[i].input_count<<","<<write_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( write_time.csv )\n";
     f.close();
 }
 
 void FTL::FOR_TEST::fout_read_time(){
     fstream f;
-    f.open("../../read_time.txt");
+    f.open("../../read_time.csv");
     if(f.fail() == true){
-        cout<<"fail to open file ( read_time.txt )\n";
+        cout<<"fail to open file ( read_time.csv )\n";
         return;
     }
-    cout<<"start read file ( read_time.txt )\n";
-    for(int i = 0; i < read_time.size(); i++) { f<<read_time[i].input_count<<" "<<read_time[i].operation_time<<"\n"; }
-    cout<<"end write file ( read_time.txt )\n";
+    cout<<"start read file ( read_time.csv )\n";
+    for(int i = 0; i < read_time.size(); i++) { f<<read_time[i].input_count<<","<<read_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( read_time.csv )\n";
     f.close();
 }
 
 void FTL::FOR_TEST::fout_erase_time(){
     fstream f;
-    f.open("../../erase_time.txt");
+    f.open("../../erase_time.csv");
     if(f.fail() == true){
-        cout<<"fail to open file ( erase_time.txt )\n";
+        cout<<"fail to open file ( erase_time.csv )\n";
         return;
     }
-    cout<<"start erase file ( erase_time.txt )\n";
-    for(int i = 0; i < erase_time.size(); i++) { f<<erase_time[i].input_count<<" "<<erase_time[i].operation_time<<"\n"; }
-    cout<<"end write file ( erase_time.txt )\n";
+    cout<<"start erase file ( erase_time.csv )\n";
+    for(int i = 0; i < erase_time.size(); i++) { f<<erase_time[i].input_count<<","<<erase_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( erase_time.csv )\n";
     f.close();
 }
 
 void FTL::FOR_TEST::fout_merge_operation_time(){
     fstream f;
-    f.open("../../merge_operation_time.txt");
+    f.open("../../merge_operation_time.csv");
     if(f.fail() == true){
-        cout<<"fail to open file ( merge_operation_time.txt )\n";
+        cout<<"fail to open file ( merge_operation_time.csv )\n";
         return;
     }
-    cout<<"start merge_operation file ( merge_operation_time.txt )\n";
-    for(int i = 0; i < merge_operation_time.size(); i++) { f<<merge_operation_time[i].input_count<<" "<<merge_operation_time[i].operation_time<<"\n"; }
-    cout<<"end write file ( merge_operation_time.txt )\n";
+    cout<<"start merge_operation file ( merge_operation_time.csv )\n";
+    for(int i = 0; i < merge_operation_time.size(); i++) { f<<merge_operation_time[i].input_count<<","<<merge_operation_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( merge_operation_time.csv )\n";
     f.close();
 }
 
 void FTL::FOR_TEST::fout_switch_operation_time(){
     fstream f;
-    f.open("../../switch_operation_time.txt");
+    f.open("../../switch_operation_time.csv");
     if(f.fail() == true){
-        cout<<"fail to open file ( switch_operation_time.txt )\n";
+        cout<<"fail to open file ( switch_operation_time.csv )\n";
         return;
     }
-    cout<<"start switch_operation file ( switch_operation_time.txt )\n";
-    for(int i = 0; i < switch_operation_time.size(); i++) { f<<switch_operation_time[i].input_count<<" "<<switch_operation_time[i].operation_time<<"\n"; }
-    cout<<"end write file ( switch_operation_time.txt )\n";
+    cout<<"start switch_operation file ( switch_operation_time.csv )\n";
+    for(int i = 0; i < switch_operation_time.size(); i++) { f<<switch_operation_time[i].input_count<<","<<switch_operation_time[i].operation_time<<"\n"; }
+    cout<<"end write file ( switch_operation_time.csv )\n";
+    f.close();
+}
+
+void FTL::fout_wear_level(){
+    fstream f;
+    f.open("../../wear_level.csv");
+    if(f.fail() == true){
+        cout<<"fail to open file ( wear_level.csv )\n";
+        return;
+    }
+    cout<<"start wear_level file ( wear_level.csv )\n";
+    for(int i = 0; i < 650; i++) { f<<flash_memory.wear_level_check[i]<<"\n"; }
+    cout<<"end write file ( wear_level.csv )\n";
     f.close();
 }

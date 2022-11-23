@@ -13,6 +13,10 @@ bool FLASH_MEMORY::init(){
         return false;
     }
     cout<<"FLASH_MEMORY::init :: created flash_memory, size : "<<flash_memory_size<<"\n";
+    //for_test
+    wear_level_check = new int[flash_memory_size];
+    for(int i = 0; i < flash_memory_size; i++) { wear_level_check[i] = 0; }
+    //
     return true;
 };
 
@@ -62,6 +66,9 @@ bool FLASH_MEMORY::flash_erase(const int block_index){
         flash_memory[block_index].sector[i].is_using = false;
     }
     flash_memory[block_index].wear_level++;
+    //for_test
+    wear_level_check[block_index]++;
+    //
     cout<<"FLASH_MEMORY::flash_erase( "<<block_index<<" ) :: complete\n";
     return true;
 };

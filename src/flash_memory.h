@@ -24,9 +24,12 @@ public:
     ~FLASH_MEMORY(){
         cout<<"FLASH_MEMORY::called ~FLASH_MEMORY()\n";
         delete[] flash_memory;
+        delete[] wear_level_check;
     };
     //for test
     void print_memory(const int from, const int to)const;
+    int* wear_level_check = nullptr;
+    // int wear_level_check[638] = {0,};
     //
 private:
     BLOCK* flash_memory = nullptr;
